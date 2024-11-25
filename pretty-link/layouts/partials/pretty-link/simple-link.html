@@ -1,0 +1,29 @@
+<!--
+Variables
+
+- Permalink: URL
+- Title: Site or blog's title
+- Summary: Site's description or blog's article summary
+- ThumbnailLink: Image URL
+- ImageSizeMode: Resize | Cover
+-->
+<a href="{{ .Permalink }}" class="no-underline text-black">
+  <div
+    class="group flex flex-col md:flex-row h-32 md:h-32 border
+          dark:border-darkmode-border hover:border-primary hover:dark:border-darkmode-primary
+            shadow-sm hover:shadow-md
+            rounded-md overflow-clip transform duration-300 md:mx-4">
+    <div class="flex flex-col p-4 justify-center h-full">
+      <div class="flex items-center">
+        <img class="m-0 !mb-0 w-5 h-5" src="{{ .FaviconLink }}" />
+        <span class="pl-2 font-bold text-base text-text dark:text-darkmode-text"
+          >{{ .Title }}</span
+        >
+      </div>
+      <span
+        class="text-sm text-text dark:text-darkmode-text font-light line-clamp-2 md:leading-6 pt-1 opacity-90">
+        {{ .Summary }}
+      </span>
+    </div>
+  </div>
+</a>
