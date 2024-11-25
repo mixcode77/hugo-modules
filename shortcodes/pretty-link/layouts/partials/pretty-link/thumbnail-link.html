@@ -14,7 +14,7 @@ Variables
             shadow-sm hover:shadow-md
             rounded-md overflow-clip transform duration-300 md:mx-4">
     <img
-      class="w-full md:w-52 h-64 max-h-64 flex-grow-0 group-hover:scale-105 m-0 !mb-0 !rounded-none transform duration-300
+      class="w-full md:w-60 h-64 max-h-64 flex-grow-0 group-hover:scale-105 m-0 !mb-0 !rounded-none transform duration-300
         {{ if eq .ImageSizeMode "Cover" }}
         object-cover
       {{ else if eq .ImageSizeMode "Resize" }}
@@ -22,11 +22,11 @@ Variables
       {{ end }}"
       src="{{ .ThumbnailLink }}" />
     <div class="flex-1 flex flex-col p-4 justify-center">
-      <div class="font-bold text-base text-text dark:text-darkmode-text">
+      <div class="font-bold text-base text-text dark:text-darkmode-text line-clamp-1">
         {{ .Title }}
       </div>
       <span
-        class="text-sm text-text dark:text-darkmode-text font-light line-clamp-2 md:leading-6 pt-1 opacity-90">
+        class="text-sm text-text dark:text-darkmode-text line-clamp-2 md:leading-6 pt-1 opacity-90">
         {{ .Summary }}
       </span>
     </div>
