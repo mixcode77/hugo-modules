@@ -1,3 +1,3 @@
-module github.com/mixcode77/hugo-modules/pretty-link
+module github.com/mixcode77/hugo-modules/shortcodes/pretty-link
 
 go 1.20
