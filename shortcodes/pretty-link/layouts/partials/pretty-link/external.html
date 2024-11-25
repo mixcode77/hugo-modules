@@ -38,7 +38,7 @@
   {{ $summary := replaceRE "Contribute to[^.]*" "" $summary }}
   {{ partial "pretty-link/thumbnail-link.html" (dict
     "Permalink" .Href
-    "Title" $title
+    "Title" .Href
     "Summary" $summary
     "ThumbnailLink" "https://github.com/fluidicon.png"
     "ImageSizeMode" "Resize"
