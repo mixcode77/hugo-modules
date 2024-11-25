@@ -1,0 +1,21 @@
+{{- $page := .Site.GetPage .Href -}}
+
+{{ if $page }}
+  {{- $permalink := $page.RelPermalink -}}
+  {{- $title := $page.Title -}}
+  {{- $summary := $page.Summary | plainify -}}
+  {{- $thumbnail := $page.Resources.Get $page.Params.image | default (resources.Get $page.Params.image) -}}
+  {{- $resizedImage := $thumbnail.Resize "0x256" -}}
+  {{- $thumbnailLink := $resizedImage.RelPermalink -}}
+
+  {{ partial "pretty-link/thumbnail-link.html" (dict
+    "Permalink" $permalink
+    "Title" $title
+    "Summary" $summary
+    "ThumbnailLink" $thumbnailLink
+    "ImageSizeMode" "Cover"
+    )
+  }}
+{{ else }}
+  <span>🚨 pretty-link: {{ .Href }} cannot be found.</span>
+{{ end }}
