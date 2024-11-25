@@ -1,0 +1,130 @@
+{{ $opts := dict
+  "headers" (dict "User-Agent" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
+}}
+{{ $html := resources.GetRemote .Href $opts }}
+{{ $content := $html.Content }}
+
+
+<!-- Extract the title from the HTML -->
+{{ $titleList := findRE "<title>(.*?)</title>" $content }}
+{{ $title := index (first 1 $titleList) 0 | plainify }}
+<!-- og:title -->
+{{ if eq $title "" }}
+  {{ $matches := findRESubmatch `<meta\s+[^>]*\bproperty=["']og:title["'][^>]*\bcontent=["']([^"']+)["']?[^>]*>` $content }}
+  {{ if gt (len $matches) 0 }}
+    {{ $title = index (index $matches 0) 1 }}
+  {{ end }}
+{{ end }}
+{{ $title = $title | safeHTML }}
+
+
+<!-- Extract the description from the HTML -->
+{{ $summary := "" }}
+{{ $metaDescriptionMathes := findRESubmatch `<meta[^>]*name="description"[^>]*content="(.*?)"[^>]*>` $content }}
+{{ if gt (len $metaDescriptionMathes) 0 }}
+  {{ $summary = index (index $metaDescriptionMathes 0) 1 }}
+{{ end }}
+{{ if eq $summary "" }}
+  {{ $ogDescriptionMatches := findRESubmatch `<meta\s+[^>]*\bproperty=["']og:description["'][^>]*\bcontent=["']([^"']+)["']?[^>]*>` $content }}
+  {{ if gt (len $ogDescriptionMatches) 0 }}
+    {{ $summary = index (index $ogDescriptionMatches 0) 1 }}
+  {{ end }}
+{{ end }}
+{{ $summary = $summary | safeHTML }}
+
+
+<!-- If it's GitHub, use the fluidicon and modify the description. -->
+{{ if hasPrefix .Href "https://github.com" }}
+  {{ $summary := replaceRE "Contribute to[^.]*" "" $summary }}
+  {{ partial "pretty-link/thumbnail-link.html" (dict
+    "Permalink" .Href
+    "Title" $title
+    "Summary" $summary
+    "ThumbnailLink" "https://github.com/fluidicon.png"
+    "ImageSizeMode" "Resize"
+    )
+  }}
+{{ else }}
+  <!-- For other sites, look for the og:image first, then the apple-touch-icon, and if neither is available, use the favicon. -->
+  {{ $layout := "thumbnail" }}
+  {{ $imageResizeMode := "Cover" }}
+  {{ $icon := "" }}
+
+
+  <!-- Look for the og:image -->
+  {{ $ogImageMatches := findRESubmatch `<meta\s+[^>]*\bproperty=["']og:image["'][^>]*\bcontent=["']([^"']+)["']?[^>]*>` $content }}
+  {{ if gt (len $ogImageMatches) 0 }}
+    {{ $icon = index (index $ogImageMatches 0) 1 }}
+  {{ end }}
+
+
+  <!-- If $icon is not set, look for the apple-touch-icon -->
+  {{ if eq $icon "" }}
+    {{ $matches := findRE `<link[^>]*\brel=["']?apple-touch-icon["']?[^>]*>` $content }}
+    {{ if gt (len $matches) 0 }}
+      {{ $iconTag := index $matches 0 }}
+      {{ $iconMatches := findRESubmatch `href=["']?([^"'>]+)["']?` $iconTag }}
+      {{ if gt (len $iconMatches) 0 }}
+        {{ $icon = index (index $iconMatches 0) 1 }}
+        {{ $imageResizeMode := "Resize" }}
+      {{ end }}
+    {{ end }}
+  {{ end }}
+
+
+  <!-- If $icon is not set, use the favicon -->
+  {{ if eq $icon "" }}
+    {{ $layout = "simple" }}
+    {{ $matches := findRE `<link[^>]*\brel=["']?icon["']?[^>]*[^>]*>` $content }}
+    {{ if gt (len $matches) 0 }}
+      {{ $iconTag := index $matches 0 }}
+      {{ $iconMatches := findRESubmatch `href=["']?([^"'>]+)["']?` $iconTag }}
+      {{ if gt (len $iconMatches) 0 }}
+        {{ $icon = index (index $iconMatches 0) 1 }}
+        {{ $imageResizeMode := "Resize" }}
+      {{ end }}
+    {{ end }}
+  {{ end }}
+
+
+  <!-- Add the site's baseURL to $icon -->
+  {{ $iconURL := "" }}
+  {{ if hasPrefix $icon "http" }}
+    {{ $iconURL = $icon }}
+  {{ else }}
+    {{ if (hasPrefix $icon "/") }}
+      <!-- Absolute path favicons are directly linked -->
+      {{- $parsedURL := urls.Parse .Href -}}
+      {{- $baseURL := print $parsedURL.Scheme "://" $parsedURL.Host -}}
+      {{- $iconURL = print $baseURL $icon -}}
+    {{ else }}
+      <!-- Relative path favicons are updated based on the current URL -->
+      {{- $parsedURL := urls.Parse .Href -}}
+      {{- $basePath := $parsedURL.Path | path.Dir -}}
+      {{- $resolvedPath := path.Join $basePath $icon -}}
+      {{- $absolutePath := path.Clean $resolvedPath -}}
+      {{- $iconURL = print $parsedURL.Scheme "://" $parsedURL.Host $absolutePath -}}
+    {{ end }}
+  {{ end }}
+
+
+  <!-- For favicons, use simple-link, and for others, use thumbnail-link -->
+  {{ if eq $layout "thumbnail" }}
+    {{ partial "pretty-link/thumbnail-link.html" (dict
+      "Permalink" .Href
+      "Title" $title
+      "Summary" $summary
+      "ThumbnailLink" $iconURL
+      "ImageSizeMode" $imageResizeMode
+      )
+    }}
+  {{ else }}
+    {{ partial "pretty-link/simple-link.html" (dict
+      "Permalink" .Href
+      "Title" $title
+      "Summary" $summary
+      "FaviconLink" $iconURL
+      )
+    }}
+  {{ end }}
+{{ end }}
