@@ -1,18 +1,21 @@
-{{- $page := .Site.GetPage .Href -}}
+{{ $page := .Site.GetPage .Href }}
 
 {{ if $page }}
-  {{- $permalink := $page.RelPermalink -}}
-  {{- $title := $page.Title -}}
-  {{- $summary := $page.Summary | plainify -}}
-  {{- $thumbnail := $page.Resources.Get $page.Params.image | default (resources.Get $page.Params.image) -}}
-  {{- $resizedImage := $thumbnail.Resize "0x256" -}}
-  {{- $thumbnailLink := $resizedImage.RelPermalink -}}
+  {{ $permalink := $page.RelPermalink }}
+  {{ $title := $page.Title }}
+  {{ $summary := $page.Summary | plainify }}
+  {{ $thumbnail := $page.Resources.Get $page.Params.image | default (resources.Get $page.Params.image) }}
+  {{ $resizedImage := $thumbnail.Resize "0x256" }}
+  {{ $thumbnailLink := $resizedImage.RelPermalink }}
+  {{ $favicon := resources.Get .Site.Params.favicon }}
+  {{ $faviconLink := $favicon.Permalink }}
 
   {{ partial "pretty-link/thumbnail-link.html" (dict
     "Permalink" $permalink
     "Title" $title
     "Summary" $summary
     "ThumbnailLink" $thumbnailLink
+    "FaviconLink" $faviconLink
     "ImageSizeMode" "Cover"
     )
   }}
